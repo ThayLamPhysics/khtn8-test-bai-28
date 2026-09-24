@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>hệ vận động</title>
+    <title>tác dụng làm quay của lực</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1324,7 +1324,1898 @@
                 opacity: 0;
             }
         }
+
     </style>
+
+    <!-- GIAO DIỆN SỔ TAY THÍ NGHIỆM (tự viết đầy đủ, không dùng khung chung) -->
+    <style data-theme="notebook" data-font="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@700;800&display=swap">
+        /* ================================================================
+           GIAO DIỆN "SỔ TAY THÍ NGHIỆM" (09/2026)
+           Lớp phủ đè lên giao diện Quest phía trên: CHỈ đổi CSS, không đổi
+           id/class nào mà JS dùng. Muốn quay về giao diện cũ thì xoá nguyên
+           khối này (bản sao lưu nằm ở _sao_luu_go_bi_mat/).
+           Nền giấy kẻ ô, viền mực đậm, bóng đổ cứng lệch, nhãn như sticker.
+           ================================================================ */
+        :root {
+            --ink: #1d1b2e;
+            --ink-soft: #5d5a70;
+            --line: #1d1b2e;
+            --paper: #fffdf7;
+            --bg-1: #f6f1e4;
+            --bg-2: #f6f1e4;
+            --grid: rgba(29, 27, 46, .07);
+            --shadow: 4px 4px 0 var(--ink);
+            --shadow-sm: 3px 3px 0 var(--ink);
+            --good: #16a34a;
+            --bad: #e11d48;
+            --r-lg: 18px;
+            --r-md: 14px;
+            --r-sm: 10px;
+        }
+
+        body {
+            font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+            background-color: var(--bg-1);
+            background-image:
+                radial-gradient(60% 40% at 100% 0%, color-mix(in srgb, var(--color-start) 35%, transparent), transparent 70%),
+                radial-gradient(50% 35% at 0% 100%, color-mix(in srgb, var(--color-end) 22%, transparent), transparent 70%),
+                linear-gradient(var(--grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+            background-size: auto, auto, 24px 24px, 24px 24px;
+            background-attachment: fixed;
+        }
+
+        /* Thẻ: giấy trắng ngà, viền mực, bóng lệch */
+        .glass-card,
+        .quest-card {
+            background: var(--paper);
+            border: 2.5px solid var(--ink);
+            border-radius: var(--r-lg);
+            box-shadow: 6px 6px 0 var(--ink);
+        }
+
+        /* Nút: phẳng, viền mực, nhấn xuống thì bóng biến mất */
+        .primary-button,
+        .submit-button,
+        .cancel-button {
+            border: 2.5px solid var(--ink) !important;
+            border-radius: 14px;
+            font-weight: 800;
+            letter-spacing: .02em;
+            box-shadow: var(--shadow);
+            transition: transform .1s ease, box-shadow .1s ease, filter .15s;
+        }
+
+        .primary-button {
+            background: var(--color-end);
+            color: #fff;
+        }
+
+        .submit-button {
+            background: #22c55e;
+            color: #fff;
+        }
+
+        .cancel-button {
+            background: var(--paper);
+            color: var(--ink);
+        }
+
+        .primary-button:active:not(:disabled),
+        .submit-button:active:not(:disabled),
+        .cancel-button:active:not(:disabled) {
+            transform: translate(4px, 4px);
+            box-shadow: 0 0 0 var(--ink);
+        }
+
+        .primary-button:disabled {
+            background: #e7e2d3;
+            color: #9a96a8;
+            box-shadow: 2px 2px 0 #b9b4a3;
+            border-color: #b9b4a3 !important;
+        }
+
+        /* Màn hình bắt đầu */
+        #start-screen {
+            position: relative;
+            overflow: hidden;
+        }
+
+        #start-screen::before {
+            content: 'PHIẾU KIỂM TRA';
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .7rem;
+            font-weight: 800;
+            letter-spacing: .18em;
+            padding: 5px 12px;
+            margin-bottom: 14px;
+            border: 2px solid var(--ink);
+            border-radius: 999px;
+            background: #fde047;
+            transform: rotate(-2deg);
+        }
+
+        .hero-title {
+            background: none;
+            -webkit-text-fill-color: var(--ink);
+            color: var(--ink);
+            font-weight: 900;
+            letter-spacing: -.02em;
+        }
+
+        .hero-title::after {
+            content: '';
+            display: block;
+            width: 72px;
+            height: 7px;
+            margin: 10px auto 0;
+            border-radius: 99px;
+            background: var(--color-end);
+        }
+
+        .name-input {
+            background: #fff;
+            border: 2.5px solid var(--ink);
+            border-radius: 14px;
+            box-shadow: inset 0 -4px 0 rgba(29, 27, 46, .08);
+            font-weight: 700;
+        }
+
+        .name-input:focus {
+            border-color: var(--ink);
+            box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-end) 35%, transparent);
+        }
+
+        /* Khung "Luật chơi" viết sẵn style inline -> đè bằng bộ chọn thuộc tính */
+        #start-screen div[style*="#faf8ff"],
+        #ai-analysis-container {
+            background: #fff !important;
+            border: 2px dashed var(--ink) !important;
+            border-radius: var(--r-md) !important;
+        }
+
+        .rule-item {
+            color: var(--ink);
+            font-weight: 500;
+            border-bottom: 1px dashed rgba(29, 27, 46, .18);
+        }
+
+        .rule-item:last-child {
+            border-bottom: none;
+        }
+
+        .resume-card {
+            border: 2.5px solid var(--ink);
+            background: #fef9c3;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* HUD */
+        .hud {
+            background: color-mix(in srgb, var(--paper) 92%, transparent);
+            border: 2.5px solid var(--ink);
+            border-radius: var(--r-lg);
+            box-shadow: var(--shadow);
+        }
+
+        .avatar {
+            border: 2px solid var(--ink);
+            border-radius: 50%;
+            background: var(--color-end);
+            box-shadow: none;
+        }
+
+        .xp-pill {
+            background: #fde047;
+            color: var(--ink);
+            border: 2px solid var(--ink);
+            box-shadow: 2px 2px 0 var(--ink);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        #hud-correct {
+            background: #bbf7d0 !important;
+            color: var(--ink) !important;
+            box-shadow: 2px 2px 0 var(--ink) !important;
+        }
+
+        /* Thanh tiến độ: ống nghiệm đổ dần */
+        .xp-track {
+            height: 18px;
+            background: #fff;
+            border: 2px solid var(--ink);
+            box-shadow: none;
+        }
+
+        .progress-bar-inner {
+            background: var(--color-end);
+            animation: none;
+            border-radius: 0 999px 999px 0;
+        }
+
+        .progress-bar-inner::after {
+            background: repeating-linear-gradient(90deg, transparent 0 18px, rgba(255, 255, 255, .45) 18px 20px);
+            animation: none;
+        }
+
+        .qchip {
+            background: #fff;
+            border: 2px solid var(--ink);
+            box-shadow: 2px 2px 0 var(--ink);
+            font-family: 'JetBrains Mono', monospace;
+            border-radius: 10px;
+        }
+
+        .qchip:active {
+            transform: translate(2px, 2px);
+            box-shadow: none;
+        }
+
+        #subject-badge:not(:empty) {
+            background: #c4b5fd;
+            color: var(--ink);
+            border: 2px solid var(--ink);
+            box-shadow: none;
+            transform: rotate(1.5deg);
+        }
+
+        #subject-badge:empty {
+            display: none;
+        }
+
+        .focus-notice,
+        .instant-notice {
+            border: 2px solid var(--ink);
+            color: var(--ink);
+            border-radius: 12px;
+        }
+
+        .focus-notice {
+            background: #fef3c7;
+        }
+
+        .instant-notice {
+            background: #e0e7ff;
+        }
+
+        /* Thẻ câu hỏi: như tờ giấy ghim, có dải màu trên đầu */
+        #question-card {
+            background: var(--paper);
+            border: 2.5px solid var(--ink);
+            border-radius: var(--r-lg);
+            box-shadow: 6px 6px 0 var(--ink);
+            padding-top: 26px;
+        }
+
+        #question-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: 10px;
+            background: repeating-linear-gradient(135deg, var(--color-end) 0 12px, var(--color-mid) 12px 24px);
+            border-bottom: 2.5px solid var(--ink);
+        }
+
+        #question-card.hard-question {
+            border-color: var(--ink);
+            box-shadow: 6px 6px 0 var(--bad);
+        }
+
+        #question-card.hard-question::before {
+            background: repeating-linear-gradient(135deg, #fb7185 0 12px, #1d1b2e 12px 24px);
+        }
+
+        #question-card.comprehension-question {
+            border-color: var(--ink);
+        }
+
+        #question-text {
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        #question-image-container img {
+            border: 2px solid var(--ink);
+            border-radius: 12px;
+        }
+
+        .info-badge-item {
+            border: 2px solid var(--ink);
+            box-shadow: none;
+            color: var(--ink);
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: .02em;
+        }
+
+        .info-badge-item:nth-child(odd) {
+            transform: rotate(-1.5deg);
+        }
+
+        .info-badge-item:nth-child(even) {
+            transform: rotate(1.5deg);
+        }
+
+        .difficulty-easy { background: #bbf7d0; }
+        .difficulty-medium { background: #fde68a; }
+        .difficulty-hard { background: #fecdd3; }
+        .cognitive-recognition { background: #bfdbfe; }
+        .cognitive-comprehension { background: #ddd6fe; }
+        .cognitive-application { background: #fbcfe8; }
+        .cognitive-high-order { background: #f5d0fe; }
+
+        /* Đáp án */
+        #answer-options {
+            gap: 14px;
+        }
+
+        #answer-options .option-button {
+            background: #fff;
+            border: 2.5px solid var(--ink);
+            border-radius: 14px;
+            color: var(--ink);
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+            transition: transform .1s ease, box-shadow .1s ease, background .15s;
+        }
+
+        #answer-options .option-button .option-text {
+            flex: 1;
+            min-width: 0;
+        }
+
+        #answer-options .option-button::before {
+            border: 2px solid var(--ink);
+            border-radius: 50%;
+            background: var(--bg-1);
+            color: var(--ink);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        @media (hover: hover) {
+            #answer-options .option-button:hover:not(.selected) {
+                background: #fffbea;
+                transform: translate(-1px, -1px);
+                box-shadow: 4px 4px 0 var(--ink);
+            }
+        }
+
+        #answer-options .option-button:active {
+            transform: translate(3px, 3px);
+            box-shadow: 0 0 0 var(--ink);
+        }
+
+        #answer-options .option-button.selected {
+            background: color-mix(in srgb, var(--color-end) 16%, #fff);
+            border-color: var(--ink);
+            color: var(--ink);
+            box-shadow: 4px 4px 0 var(--color-end);
+            animation: pop .25s ease;
+        }
+
+        #answer-options .option-button.selected::before {
+            background: var(--color-end);
+            color: #fff;
+            transform: rotate(-8deg) scale(1.08);
+        }
+
+        #answer-options .option-button.answer-right {
+            background: #dcfce7;
+            border-color: var(--ink);
+            color: var(--ink);
+            box-shadow: 3px 3px 0 var(--good);
+        }
+
+        #answer-options .option-button.answer-wrong {
+            background: #ffe4e6;
+            border-color: var(--ink);
+            color: var(--ink);
+            box-shadow: 3px 3px 0 var(--bad);
+        }
+
+        #answer-options .option-button.answer-right::before {
+            background: var(--good);
+            color: #fff;
+        }
+
+        #answer-options .option-button.answer-wrong::before {
+            background: var(--bad);
+            color: #fff;
+        }
+
+        .verdict {
+            border: 2px solid var(--ink);
+            border-radius: 12px;
+            color: var(--ink) !important;
+        }
+
+        #answer-options input[type="text"] {
+            border: 2.5px dashed var(--ink);
+            background: #fff;
+            box-shadow: none;
+            font-family: 'JetBrains Mono', 'Be Vietnam Pro', monospace;
+        }
+
+        #answer-options input[type="text"]:focus {
+            border-style: solid;
+            border-color: var(--ink);
+            box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-end) 30%, transparent);
+        }
+
+        #answer-options .group-item {
+            background: #fff !important;
+            border: 2.5px solid var(--ink) !important;
+            border-radius: 14px !important;
+            box-shadow: var(--shadow-sm) !important;
+        }
+
+        #answer-options .group-item>div:first-child::before {
+            color: var(--ink);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        #answer-options .mtf-button {
+            border: 2px solid var(--ink) !important;
+            border-radius: 10px !important;
+            background: #fff;
+            color: var(--ink);
+            box-shadow: 2px 2px 0 var(--ink);
+        }
+
+        #answer-options .mtf-button:active {
+            transform: translate(2px, 2px);
+            box-shadow: none;
+        }
+
+        #answer-options .btn-true-selected {
+            background: #22c55e !important;
+            border-color: var(--ink) !important;
+            box-shadow: 2px 2px 0 var(--ink) !important;
+        }
+
+        #answer-options .btn-false-selected {
+            background: #f43f5e !important;
+            border-color: var(--ink) !important;
+            box-shadow: 2px 2px 0 var(--ink) !important;
+        }
+
+        /* Thanh điều hướng */
+        .nav-dock {
+            background: color-mix(in srgb, var(--bg-1) 94%, transparent);
+            border-top: 2.5px solid var(--ink);
+        }
+
+        /* Bản đồ câu hỏi */
+        .map-sheet {
+            background: var(--paper);
+            border: 2.5px solid var(--ink);
+            border-bottom: none;
+            box-shadow: none;
+        }
+
+        @media (min-width: 768px) {
+            .map-sheet {
+                border-bottom: 2.5px solid var(--ink);
+                box-shadow: 8px 8px 0 var(--ink);
+            }
+        }
+
+        .map-grip {
+            background: var(--ink);
+            opacity: .25;
+        }
+
+        .map-dot {
+            border: 2px solid var(--ink);
+            border-radius: 10px;
+            background: #fff;
+            color: var(--ink);
+            box-shadow: 2px 2px 0 var(--ink);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .map-dot.done,
+        .map-dot.right,
+        .map-dot.wrong,
+        .map-dot.pending,
+        .map-dot.partial {
+            border-color: var(--ink);
+            box-shadow: 2px 2px 0 var(--ink);
+            color: var(--ink);
+        }
+
+        .map-dot.done,
+        .map-dot.right { background: #86efac; }
+        .map-dot.wrong { background: #fda4af; }
+        .map-dot.pending { background: #c7d2fe; }
+        .map-dot.partial { background: #fde68a; }
+
+        .map-dot.current {
+            outline: 3px solid var(--color-end);
+            outline-offset: 3px;
+        }
+
+        /* Kết quả */
+        .score-ring {
+            border: 3px solid var(--ink);
+            box-shadow: 6px 6px 0 var(--ink);
+        }
+
+        .score-ring-inner {
+            background: var(--paper);
+            border: 3px solid var(--ink);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .reward-chip,
+        .reward-chip.blue,
+        .reward-chip.green {
+            border: 2px solid var(--ink);
+            box-shadow: 2px 2px 0 var(--ink);
+            color: var(--ink);
+        }
+
+        .reward-chip { background: #fde047; }
+        .reward-chip.blue { background: #bfdbfe; }
+        .reward-chip.green { background: #bbf7d0; }
+
+        #score-by-subject>div {
+            background: #fff !important;
+            border: 2px solid var(--ink) !important;
+            box-shadow: 2px 2px 0 var(--ink) !important;
+        }
+
+        #detailed-results>div {
+            border-radius: 14px !important;
+        }
+
+        .correct,
+        .incorrect {
+            border: 2.5px solid var(--ink);
+            color: var(--ink);
+        }
+
+        .correct {
+            background-color: #f0fdf4;
+            border-left: 10px solid var(--good);
+        }
+
+        .incorrect {
+            background-color: #fff1f2;
+            border-left: 10px solid var(--bad);
+        }
+
+        .explanation-box {
+            background: #fffdf2;
+            border: 2px dashed var(--ink);
+            border-radius: 12px;
+        }
+
+        .explanation-toggle {
+            color: var(--ink);
+        }
+
+        .explanation-content {
+            color: var(--ink);
+            font-weight: 500;
+        }
+
+        /* Hỏi đáp AI, modal, đang tải */
+        #ai-chat-input {
+            border: 2px solid var(--ink) !important;
+            background: #fff !important;
+        }
+
+        .loader {
+            border: 6px solid rgba(29, 27, 46, .12);
+            border-top-color: var(--ink);
+            border-right-color: var(--color-end);
+        }
+
+        #loading-overlay {
+            background: color-mix(in srgb, var(--bg-1) 94%, transparent) !important;
+        }
+
+        #loading-text {
+            color: var(--ink);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .medal,
+            .rise-in,
+            #answer-options .option-button.selected {
+                animation: none;
+            }
+        }
+    </style>
+    <!-- ================================================================
+         KHUNG CHUNG cho 9 giao diện mới (mọi giao diện trừ Quest và Sổ tay).
+         Mỗi giao diện chỉ khai báo bộ biến --t-* và vài chi tiết trang trí
+         riêng; khung này rải các biến ấy lên đúng những class mà JS dùng.
+         Script ngay sau các khối <style> xoá những khối không được chọn.
+         ================================================================ -->
+    <style data-theme-kit>
+        :root {
+            --ink: var(--t-text);
+            --ink-soft: var(--t-soft);
+            --line: var(--t-border);
+            --paper: var(--t-surface);
+            --r-lg: var(--t-radius);
+            --r-md: var(--t-radius-sm);
+            --r-sm: var(--t-radius-sm);
+        }
+
+        body {
+            font-family: var(--t-font);
+            color: var(--t-text);
+            background: var(--t-bg);
+            background-attachment: fixed;
+        }
+
+        .glass-card,
+        .quest-card,
+        .hud,
+        #question-card,
+        .map-sheet {
+            background: var(--t-surface);
+            border: var(--t-border-w) var(--t-border-style) var(--t-border);
+            border-radius: var(--t-radius);
+            box-shadow: var(--t-shadow);
+            color: var(--t-text);
+        }
+
+        .hud {
+            backdrop-filter: blur(12px);
+        }
+
+        #question-card {
+            border-bottom: var(--t-border-w) var(--t-border-style) var(--t-border);
+            padding-top: 22px;
+        }
+
+        #question-card.hard-question {
+            border-color: var(--t-bad);
+            box-shadow: var(--t-shadow);
+        }
+
+        #question-card.comprehension-question {
+            border-color: var(--t-border);
+        }
+
+        #question-text {
+            color: var(--t-text);
+            font-family: var(--t-font-question, var(--t-font));
+            font-weight: 600;
+        }
+
+        .hero-title,
+        .text-gradient {
+            background: none;
+            -webkit-text-fill-color: var(--t-title);
+            color: var(--t-title);
+            font-family: var(--t-font-display);
+        }
+
+        .dynamic-text {
+            color: var(--t-accent);
+        }
+
+        #start-screen p,
+        .hud-sub,
+        .map-legend {
+            color: var(--t-soft) !important;
+        }
+
+        /* Nút */
+        .primary-button,
+        .submit-button,
+        .cancel-button {
+            font-family: var(--t-font-display);
+            border-radius: var(--t-radius-btn);
+            border: var(--t-border-w) solid var(--t-btn-border);
+            box-shadow: var(--t-btn-shadow);
+            transition: transform .1s ease, box-shadow .1s ease, filter .15s;
+        }
+
+        .primary-button {
+            background: var(--t-accent);
+            color: var(--t-accent-text);
+        }
+
+        .submit-button {
+            background: var(--t-good);
+            color: var(--t-good-text);
+        }
+
+        .cancel-button {
+            background: var(--t-surface-2);
+            color: var(--t-text);
+        }
+
+        .primary-button:active:not(:disabled),
+        .submit-button:active:not(:disabled),
+        .cancel-button:active:not(:disabled) {
+            transform: var(--t-press);
+            box-shadow: none;
+        }
+
+        .primary-button:disabled {
+            background: var(--t-surface-2);
+            color: var(--t-soft);
+            box-shadow: none;
+            opacity: .6;
+        }
+
+        /* Nhãn tên phiếu ở màn hình bắt đầu (nội dung đặt theo từng giao diện) */
+        #start-screen::before {
+            content: var(--t-label);
+            display: inline-block;
+            font-family: var(--t-font-mono);
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: .16em;
+            padding: 5px 12px;
+            margin-bottom: 12px;
+            border-radius: var(--t-radius-btn);
+            background: var(--t-surface-2);
+            color: var(--t-accent);
+            border: 1px solid var(--t-border);
+        }
+
+        .name-input,
+        #answer-options input[type="text"],
+        #ai-chat-input {
+            background: var(--t-input-bg) !important;
+            color: var(--t-text) !important;
+            border: var(--t-border-w) solid var(--t-border) !important;
+            border-radius: var(--t-radius-sm) !important;
+            box-shadow: none !important;
+            font-family: inherit;
+        }
+
+        .name-input::placeholder,
+        #ai-chat-input::placeholder {
+            color: var(--t-soft);
+        }
+
+        .name-input:focus,
+        #answer-options input[type="text"]:focus {
+            border-color: var(--t-accent) !important;
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--t-accent) 30%, transparent) !important;
+        }
+
+        /* Các khung đang viết màu sáng thẳng trong style="" -> đè lại */
+        #start-screen div[style*="#faf8ff"],
+        #ai-analysis-container,
+        #ai-interaction-section div[style*="#faf8ff"],
+        #ai-chat-messages,
+        #ai-interaction-section div[style*="background: #fff"] {
+            background: var(--t-surface-2) !important;
+            border-color: var(--t-border) !important;
+            color: var(--t-text);
+        }
+
+        #question-map-close {
+            background: var(--t-surface-2) !important;
+            color: var(--t-text) !important;
+        }
+
+        #loading-overlay,
+        #offline-panel,
+        #confirm-modal {
+            background: var(--t-overlay) !important;
+        }
+
+        .rule-item {
+            color: var(--t-text);
+            font-weight: 500;
+        }
+
+        .resume-card {
+            background: var(--t-surface-2);
+            border: var(--t-border-w) dashed var(--t-accent);
+        }
+
+        /* HUD */
+        .avatar {
+            background: var(--t-accent);
+            color: var(--t-accent-text);
+            border-radius: var(--t-radius-sm);
+            box-shadow: none;
+            font-family: var(--t-font-display);
+        }
+
+        .xp-pill,
+        #hud-correct,
+        .reward-chip,
+        .reward-chip.blue,
+        .reward-chip.green,
+        #subject-badge:not(:empty),
+        .qchip {
+            background: var(--t-surface-2) !important;
+            color: var(--t-text) !important;
+            border: 1px solid var(--t-border) !important;
+            box-shadow: none !important;
+            border-radius: var(--t-radius-btn);
+            font-family: var(--t-font-mono);
+        }
+
+        .xp-pill,
+        .reward-chip {
+            color: var(--t-accent) !important;
+        }
+
+        #subject-badge:empty {
+            display: none;
+        }
+
+        .xp-track {
+            background: var(--t-surface-2);
+            border: 1px solid var(--t-border);
+            box-shadow: none;
+        }
+
+        .progress-bar-inner {
+            background: var(--t-accent);
+            animation: none;
+        }
+
+        .progress-bar-inner::after {
+            display: none;
+        }
+
+        .focus-notice,
+        .instant-notice {
+            background: var(--t-surface-2);
+            border: 1px solid var(--t-border);
+            color: var(--t-text);
+        }
+
+        .info-badge-item {
+            background: var(--t-surface-2) !important;
+            color: var(--t-text);
+            border: 1px solid var(--t-border);
+            box-shadow: none;
+            font-family: var(--t-font-mono);
+            border-radius: var(--t-radius-btn);
+        }
+
+        .difficulty-easy { color: var(--t-good-ink); }
+        .difficulty-medium { color: var(--t-warn-ink); }
+        .difficulty-hard { color: var(--t-bad-ink); }
+
+        #question-image-container img {
+            border: 1px solid var(--t-border);
+        }
+
+        /* Đáp án */
+        #answer-options .option-button,
+        #answer-options .group-item {
+            background: var(--t-option-bg) !important;
+            color: var(--t-text) !important;
+            border: var(--t-border-w) var(--t-border-style) var(--t-border) !important;
+            border-radius: var(--t-radius-sm) !important;
+            box-shadow: var(--t-option-shadow) !important;
+            font-weight: 500;
+        }
+
+        #answer-options .option-button .option-text {
+            flex: 1;
+            min-width: 0;
+        }
+
+        #answer-options .option-button::before {
+            background: var(--t-surface-2);
+            color: var(--t-accent);
+            border: 1px solid var(--t-border);
+            border-radius: var(--t-radius-letter);
+            font-family: var(--t-font-mono);
+        }
+
+        #answer-options .option-button:active {
+            transform: var(--t-press);
+        }
+
+        #answer-options .option-button.selected {
+            background: var(--t-sel-bg) !important;
+            color: var(--t-sel-text) !important;
+            border-color: var(--t-accent) !important;
+            box-shadow: var(--t-sel-shadow) !important;
+        }
+
+        #answer-options .option-button.selected::before {
+            background: var(--t-accent);
+            color: var(--t-accent-text);
+            border-color: var(--t-accent);
+        }
+
+        #answer-options .option-button.answer-right,
+        .group-item.answer-right {
+            background: var(--t-good-bg) !important;
+            border-color: var(--t-good) !important;
+            color: var(--t-text) !important;
+        }
+
+        #answer-options .option-button.answer-wrong,
+        .group-item.answer-wrong {
+            background: var(--t-bad-bg) !important;
+            border-color: var(--t-bad) !important;
+            color: var(--t-text) !important;
+        }
+
+        #answer-options .option-button.answer-right::before {
+            background: var(--t-good);
+            color: var(--t-good-text);
+        }
+
+        #answer-options .option-button.answer-wrong::before {
+            background: var(--t-bad);
+            color: #fff;
+        }
+
+        .verdict.right { background: var(--t-good-bg); color: var(--t-good-ink); }
+        .verdict.wrong { background: var(--t-bad-bg); color: var(--t-bad-ink); }
+        .verdict.waiting { background: var(--t-surface-2); color: var(--t-soft); }
+
+        #answer-options .group-item>div:first-child,
+        #answer-options .group-item>div:first-child::before {
+            color: var(--t-text);
+        }
+
+        #answer-options .mtf-button {
+            background: var(--t-surface-2);
+            color: var(--t-text) !important;
+            border: 1px solid var(--t-border) !important;
+            box-shadow: none;
+            border-radius: var(--t-radius-btn) !important;
+        }
+
+        #answer-options .btn-true-selected {
+            background: var(--t-good) !important;
+            color: var(--t-good-text) !important;
+            box-shadow: none !important;
+        }
+
+        #answer-options .btn-false-selected {
+            background: var(--t-bad) !important;
+            color: #fff !important;
+            box-shadow: none !important;
+        }
+
+        /* Thanh điều hướng + bản đồ */
+        .nav-dock {
+            background: var(--t-dock);
+            border-top: 1px solid var(--t-border);
+        }
+
+        @media (min-width: 768px) {
+            .nav-dock {
+                background: none;
+                border: none;
+            }
+        }
+
+        #question-map {
+            background: var(--t-overlay);
+        }
+
+        .map-grip {
+            background: var(--t-border);
+        }
+
+        .map-dot {
+            background: var(--t-surface-2);
+            color: var(--t-text);
+            border: 1px solid var(--t-border);
+            border-radius: var(--t-radius-letter);
+            box-shadow: none;
+            font-family: var(--t-font-mono);
+        }
+
+        .map-dot.done,
+        .map-dot.right { background: var(--t-good); color: var(--t-good-text); border-color: transparent; box-shadow: none; }
+        .map-dot.wrong { background: var(--t-bad); color: #fff; border-color: transparent; box-shadow: none; }
+        .map-dot.pending { background: #818cf8; color: #fff; border-color: transparent; box-shadow: none; }
+        .map-dot.partial { background: #f59e0b; color: #1c1917; border-color: transparent; box-shadow: none; }
+
+        .map-dot.current {
+            outline: 3px solid var(--t-accent);
+        }
+
+        /* Kết quả */
+        .score-ring {
+            box-shadow: none;
+        }
+
+        .score-ring-inner {
+            background: var(--t-surface);
+            color: var(--t-text);
+            font-family: var(--t-font-display);
+        }
+
+        #score-by-subject>div {
+            background: var(--t-surface-2) !important;
+            border: 1px solid var(--t-border) !important;
+            box-shadow: none !important;
+            color: var(--t-text);
+        }
+
+        .correct {
+            background: var(--t-good-bg);
+            border: 1px solid var(--t-border);
+            border-left: 6px solid var(--t-good);
+            color: var(--t-text);
+        }
+
+        .incorrect {
+            background: var(--t-bad-bg);
+            border: 1px solid var(--t-border);
+            border-left: 6px solid var(--t-bad);
+            color: var(--t-text);
+        }
+
+        .explanation-box {
+            background: var(--t-surface-2);
+            border: 1px dashed var(--t-border);
+            border-left: 4px solid var(--t-accent);
+        }
+
+        .explanation-toggle,
+        .explanation-content {
+            color: var(--t-text);
+        }
+
+        .loader {
+            border-color: var(--t-surface-2);
+            border-top-color: var(--t-accent);
+            border-right-color: var(--t-accent);
+        }
+
+        /* Màu chữ Tailwind do JS gắn (xem lại bài, chat, điểm theo môn) */
+        .text-slate-600, .text-slate-700, .text-slate-800 { color: var(--t-text) !important; }
+        .text-emerald-600 { color: var(--t-good-ink) !important; }
+        .text-rose-700 { color: var(--t-accent) !important; }
+        .border-slate-200 { border-color: var(--t-border) !important; }
+        #ai-chat-messages .bg-white { background: var(--t-surface) !important; }
+        #ai-chat-messages .bg-rose-600 { background: var(--t-accent) !important; color: var(--t-accent-text) !important; }
+    </style>
+
+    <!-- 1. BẢNG ĐEN PHẤN TRẮNG -->
+    <style data-theme="chalk" data-font="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&display=swap">
+        :root {
+            --t-font: 'Mali', system-ui, sans-serif;
+            --t-font-display: 'Mali', system-ui, sans-serif;
+            --t-font-mono: 'Mali', system-ui, sans-serif;
+            --t-label: 'BẢNG ĐEN';
+            --t-bg: radial-gradient(40% 30% at 20% 20%, rgba(255, 255, 255, .06), transparent 70%),
+                radial-gradient(35% 25% at 80% 70%, rgba(255, 255, 255, .05), transparent 70%),
+                radial-gradient(30% 20% at 60% 10%, rgba(255, 255, 255, .04), transparent 70%),
+                #24372d;
+            --t-surface: rgba(38, 58, 47, .92);
+            --t-surface-2: rgba(255, 255, 255, .07);
+            --t-input-bg: rgba(0, 0, 0, .18);
+            --t-option-bg: transparent;
+            --t-text: #f3f0e6;
+            --t-title: #fffbea;
+            --t-soft: #b8c7b8;
+            --t-border: rgba(243, 240, 230, .55);
+            --t-border-w: 2px;
+            --t-border-style: dashed;
+            --t-radius: 6px;
+            --t-radius-sm: 6px;
+            --t-radius-btn: 6px;
+            --t-radius-letter: 50%;
+            --t-shadow: 0 0 0 8px #6b4a2b, 0 0 0 11px #4a3219, 0 14px 30px rgba(0, 0, 0, .35);
+            --t-option-shadow: none;
+            --t-btn-shadow: none;
+            --t-btn-border: rgba(243, 240, 230, .7);
+            --t-press: scale(.98);
+            --t-accent: #fde68a;
+            --t-accent-text: #24372d;
+            --t-sel-bg: rgba(253, 230, 138, .12);
+            --t-sel-text: #fffbea;
+            --t-sel-shadow: 0 0 0 1px #fde68a;
+            --t-good: #86efac;
+            --t-good-text: #14361f;
+            --t-good-bg: rgba(134, 239, 172, .14);
+            --t-good-ink: #bbf7d0;
+            --t-bad: #fca5a5;
+            --t-bad-bg: rgba(252, 165, 165, .14);
+            --t-bad-ink: #fecaca;
+            --t-warn-ink: #fde68a;
+            --t-dock: rgba(30, 46, 38, .95);
+            --t-overlay: rgba(10, 18, 14, .7);
+        }
+
+        .hud {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, .3);
+        }
+
+        .hero-title::after {
+            content: '';
+            display: block;
+            width: 120px;
+            height: 4px;
+            margin: 8px auto 0;
+            background: #fde68a;
+            border-radius: 99px;
+            transform: rotate(-2deg);
+            opacity: .85;
+        }
+
+        #answer-options .option-button.selected .option-text {
+            text-decoration: underline wavy rgba(253, 230, 138, .7);
+            text-underline-offset: 6px;
+        }
+
+        .map-sheet {
+            box-shadow: none;
+        }
+    </style>
+
+    <!-- 2. GIẤY THI TRUYỀN THỐNG -->
+    <style data-theme="exam" data-font="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap">
+        :root {
+            --t-font: 'Be Vietnam Pro', system-ui, sans-serif;
+            --t-font-question: 'Noto Serif', Georgia, serif;
+            --t-font-display: 'Noto Serif', Georgia, serif;
+            --t-font-mono: 'Be Vietnam Pro', system-ui, sans-serif;
+            --t-label: 'ĐỀ KIỂM TRA';
+            --t-bg: #e9e6df;
+            --t-surface: #fff;
+            --t-surface-2: #f7f6f2;
+            --t-input-bg: #fff;
+            --t-option-bg: #fff;
+            --t-text: #1f2328;
+            --t-title: #111;
+            --t-soft: #5b6068;
+            --t-border: #c9c5bb;
+            --t-border-w: 1px;
+            --t-border-style: solid;
+            --t-radius: 2px;
+            --t-radius-sm: 2px;
+            --t-radius-btn: 2px;
+            --t-radius-letter: 50%;
+            --t-shadow: 0 1px 2px rgba(0, 0, 0, .08), 0 6px 18px rgba(0, 0, 0, .08);
+            --t-option-shadow: none;
+            --t-btn-shadow: none;
+            --t-btn-border: #1f2328;
+            --t-press: translateY(1px);
+            --t-accent: #1f2328;
+            --t-accent-text: #fff;
+            --t-sel-bg: #f3f4f6;
+            --t-sel-text: #111;
+            --t-sel-shadow: none;
+            --t-good: #15803d;
+            --t-good-text: #fff;
+            --t-good-bg: #f0fdf4;
+            --t-good-ink: #15803d;
+            --t-bad: #b91c1c;
+            --t-bad-bg: #fef2f2;
+            --t-bad-ink: #b91c1c;
+            --t-warn-ink: #92400e;
+            --t-dock: rgba(255, 255, 255, .96);
+            --t-overlay: rgba(20, 20, 20, .45);
+        }
+
+        /* Tờ giấy có dòng kẻ và lề đỏ */
+        #question-card,
+        #start-screen {
+            background:
+                linear-gradient(90deg, transparent 38px, #ef4444 38px, #ef4444 39px, transparent 39px),
+                repeating-linear-gradient(#fff 0 31px, #dbe4f0 31px 32px);
+            padding-left: 52px !important;
+        }
+
+        #start-screen {
+            text-align: left !important;
+        }
+
+        #start-screen > div:first-of-type {
+            display: none;
+        }
+
+        .hero-title {
+            text-transform: uppercase;
+            font-size: clamp(1.3rem, 5.5vw, 2rem);
+            letter-spacing: .02em;
+            border-bottom: 3px double #1f2328;
+            padding-bottom: 10px;
+        }
+
+        #question-text {
+            font-size: 1.15rem;
+            line-height: 2;
+        }
+
+        .primary-button {
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+
+        /* Đáp án tô như phiếu trắc nghiệm */
+        #answer-options .option-button {
+            border: none !important;
+            border-bottom: 1px dashed #c9c5bb !important;
+            background: transparent !important;
+            border-radius: 0 !important;
+            min-height: 52px;
+        }
+
+        #answer-options .option-button::before {
+            background: #fff;
+            color: #1f2328;
+            border: 1.5px solid #1f2328;
+            flex-basis: 32px;
+            height: 32px;
+        }
+
+        #answer-options .option-button.selected {
+            background: #f3f4f6 !important;
+        }
+
+        #answer-options .option-button.selected::before {
+            background: radial-gradient(circle at 40% 35%, #555, #111);
+            color: #fff;
+        }
+    </style>
+
+    <!-- 3. BẢN THIẾT KẾ (BLUEPRINT) -->
+    <style data-theme="blueprint" data-font="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+        :root {
+            --t-font: 'Be Vietnam Pro', system-ui, sans-serif;
+            --t-font-display: 'JetBrains Mono', ui-monospace, monospace;
+            --t-font-mono: 'JetBrains Mono', ui-monospace, monospace;
+            --t-label: 'BẢN VẼ SỐ 01';
+            --t-bg: linear-gradient(rgba(255, 255, 255, .16) 1px, transparent 1px) 0 0 / 100px 100px,
+                linear-gradient(90deg, rgba(255, 255, 255, .16) 1px, transparent 1px) 0 0 / 100px 100px,
+                linear-gradient(rgba(255, 255, 255, .07) 1px, transparent 1px) 0 0 / 20px 20px,
+                linear-gradient(90deg, rgba(255, 255, 255, .07) 1px, transparent 1px) 0 0 / 20px 20px,
+                #0d3b78;
+            --t-surface: rgba(10, 45, 95, .88);
+            --t-surface-2: rgba(255, 255, 255, .08);
+            --t-input-bg: rgba(0, 20, 50, .35);
+            --t-option-bg: rgba(255, 255, 255, .03);
+            --t-text: #eaf4ff;
+            --t-title: #fff;
+            --t-soft: #a9c6e8;
+            --t-border: rgba(234, 244, 255, .75);
+            --t-border-w: 1.5px;
+            --t-border-style: solid;
+            --t-radius: 0;
+            --t-radius-sm: 0;
+            --t-radius-btn: 0;
+            --t-radius-letter: 0;
+            --t-shadow: none;
+            --t-option-shadow: none;
+            --t-btn-shadow: none;
+            --t-btn-border: #eaf4ff;
+            --t-press: translateY(1px);
+            --t-accent: #7dd3fc;
+            --t-accent-text: #062a55;
+            --t-sel-bg: rgba(125, 211, 252, .16);
+            --t-sel-text: #fff;
+            --t-sel-shadow: inset 0 0 0 1px #7dd3fc;
+            --t-good: #6ee7b7;
+            --t-good-text: #053b2a;
+            --t-good-bg: rgba(110, 231, 183, .14);
+            --t-good-ink: #a7f3d0;
+            --t-bad: #fda4af;
+            --t-bad-bg: rgba(253, 164, 175, .14);
+            --t-bad-ink: #fecdd3;
+            --t-warn-ink: #fde68a;
+            --t-dock: rgba(9, 40, 85, .96);
+            --t-overlay: rgba(4, 20, 45, .75);
+        }
+
+        /* Dấu góc như khung bản vẽ kỹ thuật */
+        #question-card,
+        #start-screen {
+            position: relative;
+            background-image:
+                linear-gradient(#7dd3fc, #7dd3fc), linear-gradient(#7dd3fc, #7dd3fc),
+                linear-gradient(#7dd3fc, #7dd3fc), linear-gradient(#7dd3fc, #7dd3fc);
+            background-repeat: no-repeat;
+            background-size: 18px 3px, 3px 18px, 18px 3px, 3px 18px;
+            background-position: left top, left top, right bottom, right bottom;
+        }
+
+        .hero-title {
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            font-size: clamp(1.3rem, 5.5vw, 2.1rem);
+        }
+
+        #question-card::after {
+            content: 'TL 1:1';
+            position: absolute;
+            right: 10px;
+            top: 6px;
+            font: 600 .62rem 'JetBrains Mono', monospace;
+            color: var(--t-soft);
+            letter-spacing: .12em;
+        }
+    </style>
+
+    <!-- 4. PHÒNG THÍ NGHIỆM NEON -->
+    <style data-theme="neon" data-font="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap">
+        :root {
+            --t-font: 'Space Grotesk', system-ui, sans-serif;
+            --t-font-display: 'Space Grotesk', system-ui, sans-serif;
+            --t-font-mono: 'Space Grotesk', system-ui, sans-serif;
+            --t-label: '● LAB ONLINE';
+            --t-bg: radial-gradient(50% 40% at 10% 0%, rgba(57, 255, 136, .16), transparent 70%),
+                radial-gradient(45% 35% at 100% 30%, rgba(168, 85, 247, .22), transparent 70%),
+                radial-gradient(50% 40% at 50% 110%, rgba(34, 211, 238, .16), transparent 70%),
+                #07070f;
+            --t-surface: rgba(255, 255, 255, .05);
+            --t-surface-2: rgba(255, 255, 255, .07);
+            --t-input-bg: rgba(0, 0, 0, .35);
+            --t-option-bg: rgba(255, 255, 255, .03);
+            --t-text: #eef2ff;
+            --t-title: #fff;
+            --t-soft: #9aa3c0;
+            --t-border: rgba(255, 255, 255, .14);
+            --t-border-w: 1px;
+            --t-border-style: solid;
+            --t-radius: 20px;
+            --t-radius-sm: 14px;
+            --t-radius-btn: 999px;
+            --t-radius-letter: 10px;
+            --t-shadow: 0 10px 40px rgba(0, 0, 0, .5);
+            --t-option-shadow: none;
+            --t-btn-shadow: 0 0 18px rgba(57, 255, 136, .45);
+            --t-btn-border: transparent;
+            --t-press: scale(.97);
+            --t-accent: #39ff88;
+            --t-accent-text: #04140a;
+            --t-sel-bg: rgba(57, 255, 136, .1);
+            --t-sel-text: #fff;
+            --t-sel-shadow: 0 0 0 1px #39ff88, 0 0 22px rgba(57, 255, 136, .35);
+            --t-good: #39ff88;
+            --t-good-text: #04140a;
+            --t-good-bg: rgba(57, 255, 136, .1);
+            --t-good-ink: #86ffb8;
+            --t-bad: #ff4d8d;
+            --t-bad-bg: rgba(255, 77, 141, .12);
+            --t-bad-ink: #ff9cc0;
+            --t-warn-ink: #ffd166;
+            --t-dock: rgba(7, 7, 15, .85);
+            --t-overlay: rgba(0, 0, 0, .72);
+        }
+
+        .glass-card,
+        .quest-card,
+        .hud,
+        #question-card {
+            backdrop-filter: blur(16px);
+        }
+
+        .hero-title {
+            text-shadow: 0 0 18px rgba(57, 255, 136, .55);
+        }
+
+        .progress-bar-inner {
+            background: linear-gradient(90deg, #22d3ee, #39ff88);
+            box-shadow: 0 0 14px #39ff88;
+        }
+
+        .submit-button {
+            box-shadow: 0 0 18px rgba(57, 255, 136, .45);
+        }
+
+        .cancel-button {
+            box-shadow: none;
+            border: 1px solid rgba(255, 255, 255, .2);
+        }
+
+        #question-card::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            right: 20px;
+            top: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #39ff88, #a855f7, transparent);
+        }
+    </style>
+
+    <!-- 5. PIXEL GAME CỔ ĐIỂN -->
+    <style data-theme="pixel" data-font="https://fonts.googleapis.com/css2?family=VT323&family=Be+Vietnam+Pro:wght@500;600;700&display=swap">
+        :root {
+            --t-font: 'Be Vietnam Pro', system-ui, sans-serif;
+            --t-font-display: 'VT323', ui-monospace, monospace;
+            --t-font-mono: 'VT323', ui-monospace, monospace;
+            --t-label: 'PLAYER 1 READY';
+            --t-bg: #9bbc0f;
+            --t-surface: #e0f0b0;
+            --t-surface-2: #c8e08a;
+            --t-input-bg: #f4fbdc;
+            --t-option-bg: #f4fbdc;
+            --t-text: #0f380f;
+            --t-title: #0f380f;
+            --t-soft: #306230;
+            --t-border: #0f380f;
+            --t-border-w: 3px;
+            --t-border-style: solid;
+            --t-radius: 0;
+            --t-radius-sm: 0;
+            --t-radius-btn: 0;
+            --t-radius-letter: 0;
+            --t-shadow: 6px 6px 0 #306230;
+            --t-option-shadow: 4px 4px 0 #306230;
+            --t-btn-shadow: 4px 4px 0 #0f380f;
+            --t-btn-border: #0f380f;
+            --t-press: translate(4px, 4px);
+            --t-accent: #306230;
+            --t-accent-text: #e0f0b0;
+            --t-sel-bg: #0f380f;
+            --t-sel-text: #e0f0b0;
+            --t-sel-shadow: 4px 4px 0 #306230;
+            --t-good: #306230;
+            --t-good-text: #e0f0b0;
+            --t-good-bg: #c8e08a;
+            --t-good-ink: #0f380f;
+            --t-bad: #8b1e1e;
+            --t-bad-bg: #f0c8a8;
+            --t-bad-ink: #8b1e1e;
+            --t-warn-ink: #6b4d00;
+            --t-dock: #8bac0f;
+            --t-overlay: rgba(15, 56, 15, .7);
+        }
+
+        body {
+            background-image: linear-gradient(rgba(15, 56, 15, .06) 2px, transparent 2px);
+            background-size: 100% 4px;
+        }
+
+        .hero-title,
+        .xp-pill,
+        .qchip,
+        .reward-chip,
+        #answer-options .option-button::before,
+        .map-dot,
+        .score-ring-inner,
+        .primary-button,
+        .submit-button,
+        .cancel-button {
+            font-size: 1.35em !important;
+            letter-spacing: .04em;
+            -webkit-font-smoothing: none;
+        }
+
+        .hero-title {
+            font-size: clamp(2rem, 9vw, 3.2rem) !important;
+            text-transform: uppercase;
+            text-shadow: 3px 3px 0 #8bac0f;
+        }
+
+        /* Thanh máu chia khúc */
+        .xp-track {
+            height: 20px;
+            border: 3px solid #0f380f;
+            background: #e0f0b0;
+            border-radius: 0;
+        }
+
+        .progress-bar-inner {
+            border-radius: 0;
+            background: repeating-linear-gradient(90deg, #306230 0 10px, transparent 10px 13px);
+        }
+
+        #answer-options .option-button.selected::before {
+            background: #e0f0b0;
+            color: #0f380f;
+        }
+
+        #answer-options .option-button.selected::after {
+            content: '◀';
+            margin-left: auto;
+            font-family: 'VT323', monospace;
+            font-size: 1.4rem;
+            animation: pxblink 1s steps(1) infinite;
+        }
+
+        @keyframes pxblink {
+            50% {
+                opacity: 0;
+            }
+        }
+    </style>
+
+    <!-- 6. TỐI GIẢN -->
+    <style data-theme="minimal" data-font="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+        :root {
+            --t-font: 'Inter', system-ui, -apple-system, sans-serif;
+            --t-font-display: 'Inter', system-ui, -apple-system, sans-serif;
+            --t-font-mono: 'Inter', system-ui, -apple-system, sans-serif;
+            --t-label: 'BÀI KIỂM TRA';
+            --t-bg: #f5f5f7;
+            --t-surface: #fff;
+            --t-surface-2: #f5f5f7;
+            --t-input-bg: #f5f5f7;
+            --t-option-bg: #fff;
+            --t-text: #1d1d1f;
+            --t-title: #1d1d1f;
+            --t-soft: #6e6e73;
+            --t-border: #e5e5ea;
+            --t-border-w: 1px;
+            --t-border-style: solid;
+            --t-radius: 22px;
+            --t-radius-sm: 14px;
+            --t-radius-btn: 999px;
+            --t-radius-letter: 50%;
+            --t-shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 10px 30px rgba(0, 0, 0, .06);
+            --t-option-shadow: none;
+            --t-btn-shadow: none;
+            --t-btn-border: transparent;
+            --t-press: scale(.98);
+            --t-accent: #0071e3;
+            --t-accent-text: #fff;
+            --t-sel-bg: #f0f7ff;
+            --t-sel-text: #1d1d1f;
+            --t-sel-shadow: 0 0 0 1px #0071e3;
+            --t-good: #34c759;
+            --t-good-text: #fff;
+            --t-good-bg: #effaf2;
+            --t-good-ink: #248a3d;
+            --t-bad: #ff3b30;
+            --t-bad-bg: #fff2f1;
+            --t-bad-ink: #d70015;
+            --t-warn-ink: #b25000;
+            --t-dock: rgba(245, 245, 247, .85);
+            --t-overlay: rgba(0, 0, 0, .3);
+        }
+
+        #start-screen::before {
+            background: none;
+            border: none;
+            color: var(--t-soft);
+            padding: 0;
+        }
+
+        .hero-title {
+            font-weight: 700;
+            letter-spacing: -.03em;
+        }
+
+        .hud {
+            border: none;
+        }
+
+        #question-card {
+            border: none;
+        }
+
+        #answer-options .option-button::before {
+            border: 1.5px solid #d2d2d7;
+            background: #fff;
+            color: #6e6e73;
+        }
+
+        .xp-track {
+            height: 6px;
+            border: none;
+        }
+    </style>
+
+    <!-- 7. BẢNG TUẦN HOÀN -->
+    <style data-theme="periodic" data-font="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+        :root {
+            --t-font: 'Be Vietnam Pro', system-ui, sans-serif;
+            --t-font-display: 'Be Vietnam Pro', system-ui, sans-serif;
+            --t-font-mono: 'JetBrains Mono', ui-monospace, monospace;
+            --t-label: 'Kt · KIỂM TRA';
+            --t-bg: linear-gradient(90deg, rgba(15, 23, 42, .045) 1px, transparent 1px) 0 0 / 46px 46px,
+                linear-gradient(rgba(15, 23, 42, .045) 1px, transparent 1px) 0 0 / 46px 46px,
+                #f1f5f9;
+            --t-surface: #fff;
+            --t-surface-2: #f1f5f9;
+            --t-input-bg: #fff;
+            --t-option-bg: #fff;
+            --t-text: #0f172a;
+            --t-title: #0f172a;
+            --t-soft: #475569;
+            --t-border: #cbd5e1;
+            --t-border-w: 2px;
+            --t-border-style: solid;
+            --t-radius: 8px;
+            --t-radius-sm: 6px;
+            --t-radius-btn: 6px;
+            --t-radius-letter: 4px;
+            --t-shadow: 0 6px 20px rgba(15, 23, 42, .08);
+            --t-option-shadow: none;
+            --t-btn-shadow: none;
+            --t-btn-border: transparent;
+            --t-press: translateY(1px);
+            --t-accent: #0f766e;
+            --t-accent-text: #fff;
+            --t-sel-bg: #f0fdfa;
+            --t-sel-text: #0f172a;
+            --t-sel-shadow: 0 0 0 2px #0f766e;
+            --t-good: #16a34a;
+            --t-good-text: #fff;
+            --t-good-bg: #f0fdf4;
+            --t-good-ink: #15803d;
+            --t-bad: #dc2626;
+            --t-bad-bg: #fef2f2;
+            --t-bad-ink: #b91c1c;
+            --t-warn-ink: #a16207;
+            --t-dock: rgba(241, 245, 249, .95);
+            --t-overlay: rgba(15, 23, 42, .45);
+        }
+
+        /* Mỗi đáp án là một ô nguyên tố, màu theo nhóm */
+        #answer-options .option-button {
+            padding: 10px 14px 10px 10px;
+        }
+
+        #answer-options .option-button::before {
+            flex: 0 0 52px;
+            height: 52px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            font-family: 'Be Vietnam Pro', sans-serif;
+            border: 2px solid rgba(15, 23, 42, .25);
+            color: #0f172a;
+        }
+
+        #answer-options .option-button:nth-child(4n+1)::before { background: #fecaca; }
+        #answer-options .option-button:nth-child(4n+2)::before { background: #fde68a; }
+        #answer-options .option-button:nth-child(4n+3)::before { background: #bfdbfe; }
+        #answer-options .option-button:nth-child(4n+4)::before { background: #ddd6fe; }
+
+        #answer-options .option-button[data-answer="true"]::before { background: #bbf7d0; }
+        #answer-options .option-button[data-answer="false"]::before { background: #fecaca; }
+
+        #answer-options .option-button.selected::before {
+            border-color: #0f766e;
+            color: #0f172a;
+            box-shadow: inset 0 0 0 2px #fff;
+        }
+
+        #answer-options .option-button:nth-child(4n+1).selected::before { background: #fecaca; }
+        #answer-options .option-button:nth-child(4n+2).selected::before { background: #fde68a; }
+        #answer-options .option-button:nth-child(4n+3).selected::before { background: #bfdbfe; }
+        #answer-options .option-button:nth-child(4n+4).selected::before { background: #ddd6fe; }
+
+        .avatar {
+            background: #fde68a;
+            color: #0f172a;
+            border: 2px solid rgba(15, 23, 42, .25);
+            font-size: 1.2rem;
+        }
+
+        #start-screen::before {
+            background: #fde68a;
+            color: #0f172a;
+            border: 2px solid rgba(15, 23, 42, .25);
+        }
+    </style>
+
+    <!-- 8. SỔ TAY DỄ THƯƠNG -->
+    <style data-theme="cute" data-font="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&display=swap">
+        :root {
+            --t-font: 'Mali', system-ui, sans-serif;
+            --t-font-display: 'Mali', system-ui, sans-serif;
+            --t-font-mono: 'Mali', system-ui, sans-serif;
+            --t-label: '♡ bài kiểm tra ♡';
+            --t-bg: radial-gradient(#f9c6dc 1.5px, transparent 1.6px) 0 0 / 22px 22px, #fff7fb;
+            --t-surface: #fff;
+            --t-surface-2: #fff0f6;
+            --t-input-bg: #fff;
+            --t-option-bg: #fff;
+            --t-text: #4a3044;
+            --t-title: #d9467f;
+            --t-soft: #8a6b80;
+            --t-border: #f6bcd5;
+            --t-border-w: 2px;
+            --t-border-style: solid;
+            --t-radius: 26px;
+            --t-radius-sm: 18px;
+            --t-radius-btn: 999px;
+            --t-radius-letter: 50%;
+            --t-shadow: 0 8px 0 #fbd5e5;
+            --t-option-shadow: 0 4px 0 #fbd5e5;
+            --t-btn-shadow: 0 4px 0 rgba(0, 0, 0, .12);
+            --t-btn-border: transparent;
+            --t-press: translateY(4px);
+            --t-accent: #f472b6;
+            --t-accent-text: #fff;
+            --t-sel-bg: #fde7f1;
+            --t-sel-text: #4a3044;
+            --t-sel-shadow: 0 4px 0 #f472b6;
+            --t-good: #4ade80;
+            --t-good-text: #fff;
+            --t-good-bg: #effdf3;
+            --t-good-ink: #15803d;
+            --t-bad: #fb7185;
+            --t-bad-bg: #fff1f3;
+            --t-bad-ink: #be123c;
+            --t-warn-ink: #b45309;
+            --t-dock: rgba(255, 247, 251, .95);
+            --t-overlay: rgba(74, 48, 68, .45);
+        }
+
+        /* Băng dính washi dán mép thẻ */
+        #question-card,
+        #start-screen {
+            overflow: visible !important;
+            position: relative;
+        }
+
+        #question-card::before,
+        #start-screen::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            width: 110px;
+            height: 24px;
+            margin-left: -55px;
+            background: repeating-linear-gradient(45deg, rgba(167, 139, 250, .55) 0 8px, rgba(196, 181, 253, .55) 8px 16px);
+            transform: rotate(-3deg);
+            border-radius: 2px;
+        }
+
+        #question-card {
+            margin-top: 12px;
+        }
+
+        #answer-options .option-button.selected::after {
+            content: '✿';
+            margin-left: auto;
+            color: #f472b6;
+            font-size: 1.2rem;
+        }
+
+        .xp-track {
+            height: 14px;
+            border-radius: 999px;
+        }
+
+        .progress-bar-inner {
+            background: repeating-linear-gradient(45deg, #f472b6 0 10px, #f9a8d4 10px 20px);
+        }
+    </style>
+
+    <!-- 9. KHÔNG GIAN VŨ TRỤ -->
+    <style data-theme="space" data-font="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap">
+        :root {
+            --t-font: 'Space Grotesk', system-ui, sans-serif;
+            --t-font-display: 'Space Grotesk', system-ui, sans-serif;
+            --t-font-mono: 'Space Grotesk', system-ui, sans-serif;
+            --t-label: 'NHIỆM VỤ · MISSION';
+            --t-bg: radial-gradient(1px 1px at 10% 20%, #fff, transparent 60%),
+                radial-gradient(1px 1px at 30% 70%, #fff, transparent 60%),
+                radial-gradient(1.5px 1.5px at 55% 30%, #fff, transparent 60%),
+                radial-gradient(1px 1px at 75% 80%, #fff, transparent 60%),
+                radial-gradient(1.5px 1.5px at 90% 15%, #fff, transparent 60%),
+                radial-gradient(1px 1px at 20% 90%, #cbd5ff, transparent 60%),
+                radial-gradient(1px 1px at 65% 55%, #cbd5ff, transparent 60%),
+                radial-gradient(45% 35% at 85% 5%, rgba(139, 92, 246, .35), transparent 70%),
+                radial-gradient(40% 30% at 0% 100%, rgba(56, 189, 248, .22), transparent 70%),
+                #060a1f;
+            --t-surface: rgba(17, 24, 56, .82);
+            --t-surface-2: rgba(255, 255, 255, .06);
+            --t-input-bg: rgba(0, 0, 0, .3);
+            --t-option-bg: rgba(255, 255, 255, .03);
+            --t-text: #e6e9ff;
+            --t-title: #fff;
+            --t-soft: #9aa3d0;
+            --t-border: rgba(165, 180, 252, .28);
+            --t-border-w: 1px;
+            --t-border-style: solid;
+            --t-radius: 24px;
+            --t-radius-sm: 16px;
+            --t-radius-btn: 999px;
+            --t-radius-letter: 50%;
+            --t-shadow: 0 20px 50px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .06);
+            --t-option-shadow: none;
+            --t-btn-shadow: 0 8px 24px rgba(139, 92, 246, .35);
+            --t-btn-border: transparent;
+            --t-press: scale(.97);
+            --t-accent: #a78bfa;
+            --t-accent-text: #120a2e;
+            --t-sel-bg: rgba(167, 139, 250, .16);
+            --t-sel-text: #fff;
+            --t-sel-shadow: 0 0 0 1px #a78bfa, 0 0 24px rgba(167, 139, 250, .3);
+            --t-good: #4ade80;
+            --t-good-text: #052e16;
+            --t-good-bg: rgba(74, 222, 128, .12);
+            --t-good-ink: #86efac;
+            --t-bad: #fb7185;
+            --t-bad-bg: rgba(251, 113, 133, .12);
+            --t-bad-ink: #fda4af;
+            --t-warn-ink: #fcd34d;
+            --t-dock: rgba(6, 10, 31, .88);
+            --t-overlay: rgba(2, 4, 16, .75);
+        }
+
+        .hud,
+        #question-card,
+        .quest-card {
+            backdrop-filter: blur(10px);
+        }
+
+        /* Tên lửa bay dọc thanh tiến độ, tới hành tinh ở cuối */
+        .xp-track {
+            overflow: visible;
+            height: 10px;
+            margin-top: 16px;
+            margin-right: 26px;
+            border: none;
+            background: rgba(255, 255, 255, .1);
+        }
+
+        .xp-track::after {
+            content: '🪐';
+            position: absolute;
+            right: -28px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.3rem;
+        }
+
+        .progress-bar-inner {
+            overflow: visible;
+            background: linear-gradient(90deg, rgba(56, 189, 248, .2), #a78bfa);
+        }
+
+        .progress-bar-inner::after {
+            display: block;
+            content: '🚀';
+            inset: auto;
+            position: absolute;
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%) rotate(45deg);
+            font-size: 1.1rem;
+            background: none;
+            animation: none;
+        }
+
+        .primary-button {
+            background: linear-gradient(90deg, #8b5cf6, #38bdf8);
+            color: #fff;
+        }
+    </style>
+
+    <script>
+        /* =============================================================
+           CHỌN GIAO DIỆN: tool thay exam bằng tên giao diện.
+           Giữ đúng một khối <style data-theme> được chọn (và khung chung
+           nếu cần), xoá các khối khác, nạp font riêng của giao diện đó.
+           ============================================================= */
+        (function () {
+            var theme = 'exam';
+            var known = ['quest', 'notebook', 'chalk', 'exam', 'blueprint', 'neon', 'pixel', 'minimal', 'periodic', 'cute', 'space'];
+            if (known.indexOf(theme) === -1) theme = 'notebook'; // đề tạo trước khi có ô chọn
+            var useKit = theme !== 'quest' && theme !== 'notebook';
+            var kit = document.querySelector('style[data-theme-kit]');
+            if (kit && !useKit) kit.remove();
+            document.querySelectorAll('style[data-theme]').forEach(function (s) {
+                if (s.getAttribute('data-theme') !== theme) { s.remove(); return; }
+                var font = s.getAttribute('data-font');
+                if (font) {
+                    var l = document.createElement('link');
+                    l.rel = 'stylesheet';
+                    l.href = font;
+                    document.head.appendChild(l);
+                }
+            });
+            document.documentElement.setAttribute('data-quiz-theme', theme);
+            var emoji = { quest: '🚀', notebook: '🔬', chalk: '✏️', exam: '📝', blueprint: '📐', neon: '⚗️', pixel: '👾', minimal: '✦', periodic: '⚛️', cute: '🌷', space: '🛸' };
+            document.addEventListener('DOMContentLoaded', function () {
+                var el = document.getElementById('hero-emoji');
+                if (el && emoji[theme]) el.textContent = emoji[theme];
+            });
+        })();
+    </script>
 </head>
 
 <body>
@@ -1334,8 +3225,8 @@
 
         <!-- ============ MÀN HÌNH BẮT ĐẦU ============ -->
         <div id="start-screen" class="quest-card rise-in" style="padding: 24px 18px 22px; text-align: center;">
-            <div style="font-size: 3.2rem; line-height: 1;">🚀</div>
-            <h1 class="hero-title" style="margin-top: 6px;">hệ vận động</h1>
+            <div id="hero-emoji" style="font-size: 3.2rem; line-height: 1;">🔬</div>
+            <h1 class="hero-title" style="margin-top: 6px;">tác dụng làm quay của lực</h1>
             <p style="color: var(--ink-soft); font-weight: 700; margin-top: 4px;">Sẵn sàng chinh phục thử thách hôm nay
                 chưa?</p>
 
@@ -1617,8 +3508,8 @@
         })();
 
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxn39tDwvyGq6rn4AXWv_1YicZYREIwNuaMD95dnZz3DkMlcr1t2CMnw_7Nl7HhaH0Raw/exec';
-        const WEB_APP_URL_BACKUP = 'https://script.google.com/macros/s/AKfycbylegZvtog6oSKgR6tsHN8cF-xQvkQPx2n89GgoV-eZN7kvbCWM2tncN3MnSs8qS6p5mg/exec';
-        const SHEET_ID = '16qT2o3VuUAkqVZdoDutXojH1lTTlKvME6fYaeekb9Dc';
+        const WEB_APP_URL_BACKUP = 'https://script.google.com/macros/s/AKfycbylegZvtog6oSKgR6tsHN8cF-xQvkQPx2n89GgoV-eZN7kvbCWM2tncN3MnSs8qS6p5mg/exec,https://script.google.com/macros/s/AKfycbwAPIubznUrsM-hzyybUOfQ9erkcGclMFENtgpEI8FVZEd2EUwLJrfDkH80575PtQW3/exec,https://script.google.com/macros/s/AKfycbwYHk28XD08xOgRsOk1I85Bewa-G-Odb_Mnp2d_QonjPHBvbSbCGvxEQwpJoPnK0AF6/exec';
+        const SHEET_ID = '16VkqGRhPDKpHGX3fFKZ-Qpl3AMQoRP4ekOklWrIYiCw';
 
         /* =============================================================
            HAI MÁY CHỦ: MỘT CHẠY, MỘT DỰ PHÒNG
@@ -1629,7 +3520,8 @@
 
            Danh sách lọc bỏ ô trống (chưa cấu hình dự phòng) và địa chỉ trùng.
            ============================================================= */
-        const API_ENDPOINTS = [WEB_APP_URL, WEB_APP_URL_BACKUP]
+        // Ô dự phòng có thể chứa NHIỀU script cách nhau dấu phẩy -> chia tải cho tất cả
+        const API_ENDPOINTS = [WEB_APP_URL].concat(String(WEB_APP_URL_BACKUP || '').split(','))
             .map(u => String(u || '').trim())
             .filter((u, i, arr) => u.indexOf('http') === 0 && arr.indexOf(u) === i);
 
@@ -2079,7 +3971,8 @@
                     question.options.forEach((option, index) => {
                         const button = document.createElement('button');
                         button.className = 'w-full p-4 rounded-lg text-left option-button';
-                        button.innerHTML = option;
+                        // Bọc trong 1 span: nút là flex, nếu không chữ và công thức KaTeX bị tách thành các cột riêng
+                        button.innerHTML = '<span class="option-text">' + option + '</span>';
                         button.dataset.answer = index;
                         button.onclick = () => selectAnswer(button, true);
                         if (savedAnswer && savedAnswer.answer === index) {
